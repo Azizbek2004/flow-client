@@ -24,6 +24,7 @@ jobs:
         version: '6.5.0'
         host: 'mac'
         target: 'desktop'
+        modules: 'qtremoteobjects qtdeclarative qtsvg qt5compat qttools'
 
     - name: Install build tools
       run: |
