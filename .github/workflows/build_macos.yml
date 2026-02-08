@@ -1,0 +1,59 @@
+name: Build macOS Client
+
+on:
+  push:
+    branches: [ "main", "master", "dev" ]
+  pull_request:
+    branches: [ "main", "master", "dev" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build macOS App
+    runs-on: macos-13
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: '6.5.0'
+        host: 'mac'
+        target: 'desktop'
+
+    - name: Install build tools
+      run: |
+        brew install cmake
+
+    - name: Build XRay Core (Stub)
+      # In a real scenario we'd build XRay from source or download a prebuilt binary.
+      # For now we create a dummy binary to satisfy build requirements if needed, 
+      # or rely on the client to download it at runtime.
+      run: |
+        mkdir -p client/bin
+        touch client/bin/xray-core
+        chmod +x client/bin/xray-core
+
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cd build
+        cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH=$Qt6_DIR
+
+    - name: Build
+      run: |
+        cd build
+        cmake --build . --config Release
+
+    # Note: The output app location depends on CMake configuration. Usually in build/client.app
+    # We will upload the entire build directory content that looks like an app.
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: FlowClient-macOS
+        path: build/*.app
+        if-no-files-found: warn

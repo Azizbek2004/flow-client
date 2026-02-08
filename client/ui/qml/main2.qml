@@ -57,7 +57,10 @@ Window  {
         PageController.closeWindow()
     }
 
-    title: "AmneziaVPN"
+    title: "FLOW - CS2 Network Optimizer"
+
+    property string productName: "FLOW"
+    property string tagline: "Stable hitreg in censored networks"
 
     Item { // This item is needed for focus handling
         id: defaultFocusItem

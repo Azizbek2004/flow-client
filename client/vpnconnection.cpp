@@ -34,12 +34,15 @@
 #include "core/networkUtilities.h"
 #include "vpnconnection.h"
 
+#include "../src/flow/core/ProtocolGuard.h"
+
 VpnConnection::VpnConnection(std::shared_ptr<Settings> settings, QObject *parent)
     : QObject(parent), m_settings(settings), m_checkTimer(new QTimer(this))
 {
 #if defined(Q_OS_IOS) || defined(MACOS_NE)
     m_checkTimer.setInterval(1000);
-    connect(IosController::Instance(), &IosController::connectionStateChanged, this, &VpnConnection::onConnectionStateChanged);
+    connect(IosController::Instance(), &IosController::connectionStateChanged, this,
+            &VpnConnection::onConnectionStateChanged);
     connect(IosController::Instance(), &IosController::bytesChanged, this, &VpnConnection::onBytesChanged);
 
 #endif
@@ -57,7 +60,7 @@ void VpnConnection::onBytesChanged(quint64 receivedBytes, quint64 sentBytes)
 void VpnConnection::onKillSwitchModeChanged(bool enabled)
 {
 #ifdef AMNEZIA_DESKTOP
-    IpcClient::withInterface([enabled](QSharedPointer<IpcInterfaceReplica> iface){
+    IpcClient::withInterface([enabled](QSharedPointer<IpcInterfaceReplica> iface) {
         QRemoteObjectPendingReply<bool> reply = iface->refreshKillSwitch(enabled);
         if (reply.waitForFinished(1000) && reply.returnValue())
             qDebug() << "VpnConnection::onKillSwitchModeChanged: Killswitch refreshed";
@@ -77,8 +80,7 @@ void VpnConnection::onConnectionStateChanged(Vpn::ConnectionState state)
             iface->resetIpStack();
             iface->flushDns();
 
-            if (!ContainerProps::isAwgContainer(container) && 
-                container != DockerContainer::WireGuard) {
+            if (!ContainerProps::isAwgContainer(container) && container != DockerContainer::WireGuard) {
                 QString dns1 = m_vpnConfiguration.value(config_key::dns1).toString();
                 QString dns2 = m_vpnConfiguration.value(config_key::dns2).toString();
 
@@ -88,8 +90,9 @@ void VpnConnection::onConnectionStateChanged(Vpn::ConnectionState state)
                     iface->routeDeleteList(m_vpnProtocol->vpnGateway(), QStringList() << "0.0.0.0");
                     // qDebug() << "VpnConnection::onConnectionStateChanged :: adding custom routes, count:" << forwardIps.size();
                     if (m_settings->routeMode() == Settings::VpnOnlyForwardSites) {
-                        QTimer::singleShot(1000, m_vpnProtocol.data(),
-                                           [this]() { addSitesRoutes(m_vpnProtocol->vpnGateway(), m_settings->routeMode()); });
+                        QTimer::singleShot(1000, m_vpnProtocol.data(), [this]() {
+                            addSitesRoutes(m_vpnProtocol->vpnGateway(), m_settings->routeMode());
+                        });
                     } else if (m_settings->routeMode() == Settings::VpnAllExceptSites) {
                         iface->routeAddList(m_vpnProtocol->vpnGateway(), QStringList() << "0.0.0.0/1");
                         iface->routeAddList(m_vpnProtocol->vpnGateway(), QStringList() << "128.0.0.0/1");
@@ -132,9 +135,8 @@ void VpnConnection::onConnectionStateChanged(Vpn::ConnectionState state)
 #endif
 
 #if defined(Q_OS_IOS) || defined(MACOS_NE)
-    if (state == Vpn::ConnectionState::Connected ||
-        state == Vpn::ConnectionState::Connecting ||
-        state == Vpn::ConnectionState::Reconnecting) {
+    if (state == Vpn::ConnectionState::Connected || state == Vpn::ConnectionState::Connecting
+        || state == Vpn::ConnectionState::Reconnecting) {
         m_checkTimer.start();
     } else {
         m_checkTimer.stop();
@@ -166,9 +168,7 @@ void VpnConnection::addSitesRoutes(const QString &gw, Settings::RouteMode mode)
     }
     ips.removeDuplicates();
 
-    IpcClient::withInterface([&](QSharedPointer<IpcInterfaceReplica> iface) {
-        iface->routeAddList(gw, ips);
-    });
+    IpcClient::withInterface([&](QSharedPointer<IpcInterfaceReplica> iface) { iface->routeAddList(gw, ips); });
 
     // re-resolve domains
     for (const QString &site : sites) {
@@ -265,6 +265,11 @@ ErrorCode VpnConnection::lastError() const
 void VpnConnection::connectToVpn(int serverIndex, const ServerCredentials &credentials, DockerContainer container,
                                  const QJsonObject &vpnConfiguration)
 {
+    if (!ProtocolGuard::instance()->canSwitchProtocol()) {
+        qWarning() << "Protocol locked. Cannot switch.";
+        return;
+    }
+
     qDebug() << QString("ConnectToVpn, Server index is %1, container is %2, route mode is")
                         .arg(serverIndex)
                         .arg(ContainerProps::containerToString(container))
@@ -323,14 +328,14 @@ void VpnConnection::restartConnection()
         qDebug() << "VPN was not connected before sleep/network change, skipping reconnection";
         return;
     }
-    
+
     qDebug() << "VPN was connected before sleep/network change, attempting reconnection";
     this->disconnectFromVpn();
 #ifdef Q_OS_LINUX
     QThread::msleep(5000);
 #endif
     this->connectToVpn(m_serverIndex, m_serverCredentials, m_dockerContainer, m_vpnConfiguration);
-    
+
     // Reset the flag after reconnection attempt
     m_wasConnectedBeforeSleep = false;
 }
@@ -351,26 +356,24 @@ void VpnConnection::createProtocolConnections()
     m_networkChangeHandle = QMetaObject::Connection();
 
     // TODO: replace unsafe IpcClient::Interface() calls
-    m_connectionLoseHandle = connect(IpcClient::Interface().data(), &IpcInterfaceReplica::connectionLose,
-            this, [this]() {
-                qDebug() << "Connection Lose";
-                auto result = IpcClient::Interface()->stopNetworkCheck();
-                result.waitForFinished(3000);
-                // Track VPN state before connection loss
-                m_wasConnectedBeforeSleep = isConnected();
-                qDebug() << "VPN was connected before connection loss:" << m_wasConnectedBeforeSleep;
-                this->restartConnection();
-            });
-    m_networkChangeHandle = connect(IpcClient::Interface().data(), &IpcInterfaceReplica::networkChange,
-            this, [this]() {
-                qDebug() << "Network change";
-                // Track VPN state before network change (including sleep/wake)
-                m_wasConnectedBeforeSleep = isConnected();
-                qDebug() << "VPN was connected before network change:" << m_wasConnectedBeforeSleep;
-                this->restartConnection();
-            });
-    connect(m_vpnProtocol.data(), &VpnProtocol::tunnelAddressesUpdated,
-            this, [this](const QString& gateway, const QString& localAddress) {
+    m_connectionLoseHandle = connect(IpcClient::Interface().data(), &IpcInterfaceReplica::connectionLose, this, [this]() {
+        qDebug() << "Connection Lose";
+        auto result = IpcClient::Interface()->stopNetworkCheck();
+        result.waitForFinished(3000);
+        // Track VPN state before connection loss
+        m_wasConnectedBeforeSleep = isConnected();
+        qDebug() << "VPN was connected before connection loss:" << m_wasConnectedBeforeSleep;
+        this->restartConnection();
+    });
+    m_networkChangeHandle = connect(IpcClient::Interface().data(), &IpcInterfaceReplica::networkChange, this, [this]() {
+        qDebug() << "Network change";
+        // Track VPN state before network change (including sleep/wake)
+        m_wasConnectedBeforeSleep = isConnected();
+        qDebug() << "VPN was connected before network change:" << m_wasConnectedBeforeSleep;
+        this->restartConnection();
+    });
+    connect(m_vpnProtocol.data(), &VpnProtocol::tunnelAddressesUpdated, this,
+            [this](const QString &gateway, const QString &localAddress) {
                 Q_UNUSED(gateway)
                 Q_UNUSED(localAddress)
                 if (connectionState() != Vpn::ConnectionState::Connected) {
@@ -395,11 +398,13 @@ void VpnConnection::appendSplitTunnelingConfig()
 
     // this block is for old native configs and for old self-hosted configs
     auto protocolName = m_vpnConfiguration.value(config_key::vpnproto).toString();
-    if (protocolName == ProtocolProps::protoToString(Proto::Awg) || protocolName == ProtocolProps::protoToString(Proto::WireGuard)) {
+    if (protocolName == ProtocolProps::protoToString(Proto::Awg)
+        || protocolName == ProtocolProps::protoToString(Proto::WireGuard)) {
         allowSiteBasedSplitTunneling = false;
         auto configData = m_vpnConfiguration.value(protocolName + "_config_data").toObject();
         if (configData.value(config_key::allowed_ips).isString()) {
-            QJsonArray allowedIpsJsonArray = QJsonArray::fromStringList(configData.value(config_key::allowed_ips).toString().split(", "));
+            QJsonArray allowedIpsJsonArray =
+                    QJsonArray::fromStringList(configData.value(config_key::allowed_ips).toString().split(", "));
             configData.insert(config_key::allowed_ips, allowedIpsJsonArray);
             m_vpnConfiguration.insert(protocolName + "_config_data", configData);
         } else if (configData.value(config_key::allowed_ips).isUndefined()) {
@@ -522,7 +527,8 @@ void VpnConnection::createAndroidConnections()
 
     connect(AndroidController::instance(), &AndroidController::connectionStateChanged, androidVpnProtocol,
             &AndroidVpnProtocol::setConnectionState);
-    connect(AndroidController::instance(), &AndroidController::statisticsUpdated, androidVpnProtocol, &AndroidVpnProtocol::setBytesChanged);
+    connect(AndroidController::instance(), &AndroidController::statisticsUpdated, androidVpnProtocol,
+            &AndroidVpnProtocol::setBytesChanged);
 }
 
 AndroidVpnProtocol *VpnConnection::createDefaultAndroidVpnProtocol()
@@ -539,6 +545,10 @@ QString VpnConnection::bytesPerSecToText(quint64 bytes)
 
 void VpnConnection::disconnectFromVpn()
 {
+    if (!ProtocolGuard::instance()->canSwitchProtocol()) {
+        qWarning() << "Protocol locked. Cannot disconnect.";
+        return;
+    }
 #if defined(Q_OS_IOS) || defined(MACOS_NE)
     // iOS/macOS NE use IosController directly; m_vpnProtocol is not set there.
     IosController::Instance()->disconnectVpn();

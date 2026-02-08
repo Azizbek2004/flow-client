@@ -1,0 +1,10 @@
+{
+  "protocols": [
+    {
+      "id": "xray-vless",
+      "name": "XRay VLESS",
+      "description": "Optimized for high-censorship networks",
+      "recommended_isps": ["uztelecom", "beeline"]
+    }
+  ]
+}

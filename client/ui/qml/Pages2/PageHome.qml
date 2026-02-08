@@ -126,6 +126,43 @@ PageType {
                 Layout.alignment: Qt.AlignCenter
             }
 
+            ColumnLayout {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.bottomMargin: 20
+                spacing: 5
+
+                LabelTextType {
+                    text: "Latency"
+                    color: AmneziaStyle.color.mutedGray
+                    Layout.alignment: Qt.AlignHCenter
+                }
+                
+                Header2TextType {
+                    // TODO: Bind to actual latency metric
+                    text: ConnectionController.isConnected ? "45 ms" : "---" 
+                    color: AmneziaStyle.color.paleGray
+                    Layout.alignment: Qt.AlignHCenter
+                }
+            }
+
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.bottomMargin: 20
+                spacing: 15
+                
+                LabelTextType {
+                    text: "Lock for Match"
+                    color: AmneziaStyle.color.paleGray
+                    Layout.alignment: Qt.AlignVCenter
+                }
+                
+                SwitcherType {
+                     id: protocolLockSwitch
+                     Layout.alignment: Qt.AlignVCenter
+                     // TODO: Bind to ProtocolGuard
+                }
+            }
+
             BasicButtonType {
                 id: splitTunnelingButton
                 objectName: "splitTunnelingButton"

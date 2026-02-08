@@ -50,6 +50,11 @@ if(NOT IOS AND NOT ANDROID AND NOT MACOS_NE)
     include(${CMAKE_SOURCE_DIR}/deploy/installer/config.cmake)
 endif()
 
+# Build tests if we are not cross-compiling
+if(NOT IOS AND NOT ANDROID)
+    add_subdirectory(tests)
+endif()
+
 set(AMNEZIA_STAGE_DIR "${CMAKE_BINARY_DIR}/stage")
 
 if(WIN32 AND NOT IOS AND NOT ANDROID AND NOT MACOS_NE)

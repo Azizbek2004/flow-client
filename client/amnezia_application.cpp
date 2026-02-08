@@ -1,6 +1,8 @@
 #include "amnezia_application.h"
 
 #include <QClipboard>
+#include <QDir>
+#include <QEvent>
 #include <QFontDatabase>
 #include <QLocalServer>
 #include <QLocalSocket>
@@ -8,13 +10,11 @@
 #include <QQuickItem>
 #include <QQuickStyle>
 #include <QResource>
+#include <QSettings>
 #include <QStandardPaths>
 #include <QTextDocument>
 #include <QTimer>
 #include <QTranslator>
-#include <QEvent>
-#include <QDir>
-#include <QSettings>
 
 #include "logger.h"
 #include "ui/controllers/pageController.h"
@@ -24,16 +24,24 @@
 #include "platforms/ios/QRCodeReaderBase.h"
 
 #include "protocols/qml_register_protocols.h"
-#include <QtQuick/QQuickWindow>  // for QQuickWindow
-#include <QWindow>              // for qobject_cast<QWindow*>
+#include <QWindow> // for qobject_cast<QWindow*>
+
+#include "../src/flow/measurement/ISPDetector.h"
+#include <QtQuick/QQuickWindow> // for QQuickWindow
+
+#include "../src/flow/core/BackendAPI.h"
+#include "../src/flow/core/ProtocolGuard.h"
 
 bool AmneziaApplication::m_forceQuit = false;
 
-AmneziaApplication::AmneziaApplication(int &argc, char *argv[]) : AMNEZIA_BASE_CLASS(argc, argv),
-      m_optAutostart({QStringLiteral("a"), QStringLiteral("autostart")}, QStringLiteral("System autostart")),
-      m_optCleanup  ({QStringLiteral("c"), QStringLiteral("cleanup")}, QStringLiteral("Cleanup logs")),
-      m_optConnect  ({QStringLiteral("connect")}, QStringLiteral("Connect to server by index on startup"), QStringLiteral("index")),
-      m_optImport   ({QStringLiteral("import")}, QStringLiteral("Import configuration from data string"), QStringLiteral("data"))
+AmneziaApplication::AmneziaApplication(int &argc, char *argv[])
+    : AMNEZIA_BASE_CLASS(argc, argv),
+      m_optAutostart({ QStringLiteral("a"), QStringLiteral("autostart") }, QStringLiteral("System autostart")),
+      m_optCleanup({ QStringLiteral("c"), QStringLiteral("cleanup") }, QStringLiteral("Cleanup logs")),
+      m_optConnect({ QStringLiteral("connect") }, QStringLiteral("Connect to server by index on startup"),
+                   QStringLiteral("index")),
+      m_optImport({ QStringLiteral("import") }, QStringLiteral("Import configuration from data string"),
+                  QStringLiteral("data"))
 {
     setDesktopFileName(QStringLiteral(APPLICATION_NAME));
     setQuitOnLastWindowClosed(false);
@@ -45,12 +53,12 @@ AmneziaApplication::AmneziaApplication(int &argc, char *argv[]) : AMNEZIA_BASE_C
         s.setValue("permFixed", true);
     }
 
-    QString configLoc1 = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation).first() + "/" + ORGANIZATION_NAME + "/"
-            + APPLICATION_NAME + ".conf";
+    QString configLoc1 = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation).first() + "/"
+            + ORGANIZATION_NAME + "/" + APPLICATION_NAME + ".conf";
     QFile::setPermissions(configLoc1, QFileDevice::ReadOwner | QFileDevice::WriteOwner);
 
-    QString configLoc2 = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation).first() + "/" + ORGANIZATION_NAME + "/"
-            + APPLICATION_NAME + "/" + APPLICATION_NAME + ".conf";
+    QString configLoc2 = QStandardPaths::standardLocations(QStandardPaths::ConfigLocation).first() + "/"
+            + ORGANIZATION_NAME + "/" + APPLICATION_NAME + "/" + APPLICATION_NAME + ".conf";
     QFile::setPermissions(configLoc2, QFileDevice::ReadOwner | QFileDevice::WriteOwner);
 #endif
 
@@ -63,7 +71,7 @@ AmneziaApplication::~AmneziaApplication()
 #ifdef AMNEZIA_DESKTOP
     if (m_vpnConnection && m_vpnConnectionThread.isRunning()) {
         QMetaObject::invokeMethod(m_vpnConnection.get(), "disconnectSlots", Qt::BlockingQueuedConnection);
-        
+
         QMetaObject::invokeMethod(m_vpnConnection.get(), "disconnectFromVpn", Qt::BlockingQueuedConnection);
     }
 #endif
@@ -82,7 +90,8 @@ AmneziaApplication::~AmneziaApplication()
 }
 
 #ifdef Q_OS_ANDROID
-namespace {
+namespace
+{
     static void clearQtCaches()
     {
         const QString cacheRoot = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
@@ -100,19 +109,19 @@ void AmneziaApplication::init()
 
     const QUrl url(QStringLiteral("qrc:/ui/qml/main2.qml"));
     QObject::connect(
-        m_engine, &QQmlApplicationEngine::objectCreated, this,
-        [this, url](QObject *obj, const QUrl &objUrl) {
-            if (!obj && url == objUrl) {
-                QCoreApplication::exit(-1);
-                return;
-            }
-            // install filter on main window
-            if (auto win = qobject_cast<QQuickWindow*>(obj)) {
-                win->installEventFilter(this);
-                win->show();
-            }
-        },
-        Qt::QueuedConnection);
+            m_engine, &QQmlApplicationEngine::objectCreated, this,
+            [this, url](QObject *obj, const QUrl &objUrl) {
+                if (!obj && url == objUrl) {
+                    QCoreApplication::exit(-1);
+                    return;
+                }
+                // install filter on main window
+                if (auto win = qobject_cast<QQuickWindow *>(obj)) {
+                    win->installEventFilter(this);
+                    win->show();
+                }
+            },
+            Qt::QueuedConnection);
 
     m_engine->rootContext()->setContextProperty("Debug", &Logger::Instance());
 
@@ -153,7 +162,7 @@ void AmneziaApplication::init()
 #endif
     Logger::setServiceLogsEnabled(enabled);
 
-#ifdef Q_OS_WIN //TODO
+#ifdef Q_OS_WIN // TODO
     if (m_parser.isSet(m_optAutostart))
         m_coreController->pageController()->showOnStartup();
     else
@@ -215,6 +224,10 @@ void AmneziaApplication::registerTypes()
     qmlRegisterSingletonType(QUrl("qrc:/ui/qml/Filters/ContainersModelFilters.qml"), "ContainersModelFilters", 1, 0,
                              "ContainersModelFilters");
 
+    qmlRegisterSingletonInstance("ProtocolGuard", 1, 0, "ProtocolGuard", ProtocolGuard::instance());
+    qmlRegisterSingletonInstance("ISPDetector", 1, 0, "ISPDetector", ISPDetector::instance());
+    qmlRegisterSingletonInstance("BackendAPI", 1, 0, "BackendAPI", BackendAPI::instance());
+
     qmlRegisterType<InstalledAppsModel>("InstalledAppsModel", 1, 0, "InstalledAppsModel");
 
     Vpn::declareQmlVpnConnectionStateEnum();
@@ -238,7 +251,7 @@ bool AmneziaApplication::parseCommands()
     m_parser.addOption(m_optCleanup);
     m_parser.addOption(m_optConnect);
     m_parser.addOption(m_optImport);
-    
+
     m_parser.process(*this);
 
     if (m_parser.isSet(m_optCleanup)) {
@@ -251,7 +264,8 @@ bool AmneziaApplication::parseCommands()
 }
 
 #if !defined(Q_OS_ANDROID) && !defined(Q_OS_IOS) && !defined(MACOS_NE)
-void AmneziaApplication::startLocalServer() {
+void AmneziaApplication::startLocalServer()
+{
     const QString serverName("AmneziaVPNInstance");
     QLocalServer::removeServer(serverName);
 
@@ -263,7 +277,7 @@ void AmneziaApplication::startLocalServer() {
             QLocalSocket *clientConnection = server->nextPendingConnection();
             clientConnection->deleteLater();
         }
-        emit m_coreController->pageController()->raiseMainWindow(); //TODO
+        emit m_coreController->pageController()->raiseMainWindow(); // TODO
     });
 }
 #endif

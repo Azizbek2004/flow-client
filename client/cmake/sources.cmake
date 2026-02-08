@@ -29,6 +29,11 @@ set(HEADERS ${HEADERS}
     ${CLIENT_ROOT_DIR}/utils/qmlUtils.h
     ${CLIENT_ROOT_DIR}/core/api/apiUtils.h
     ${CLIENT_ROOT_DIR}/core/osSignalHandler.h
+    ${CLIENT_ROOT_DIR}/../src/flow/core/ProtocolGuard.h
+    ${CLIENT_ROOT_DIR}/../src/flow/measurement/ISPDetector.h
+    ${CLIENT_ROOT_DIR}/../src/flow/core/BackendAPI.h
+    ${CLIENT_ROOT_DIR}/../src/flow/core/ConnectionManager.h
+    ${CLIENT_ROOT_DIR}/../src/flow/protocols/XRayHandler.h
 )
 
 # Mozilla headres
@@ -80,6 +85,11 @@ set(SOURCES ${SOURCES}
     ${CLIENT_ROOT_DIR}/utils/qmlUtils.cpp
     ${CLIENT_ROOT_DIR}/core/api/apiUtils.cpp
     ${CLIENT_ROOT_DIR}/core/osSignalHandler.cpp
+    ${CLIENT_ROOT_DIR}/../src/flow/core/ProtocolGuard.cpp
+    ${CLIENT_ROOT_DIR}/../src/flow/core/BackendAPI.cpp
+    ${CLIENT_ROOT_DIR}/../src/flow/core/ConnectionManager.cpp
+    ${CLIENT_ROOT_DIR}/../src/flow/measurement/ISPDetector.cpp
+    ${CLIENT_ROOT_DIR}/../src/flow/protocols/XRayHandler.cpp
 )
 
 # Mozilla sources
