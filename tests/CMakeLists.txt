@@ -14,6 +14,7 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
 enable_testing()
+set(CMAKE_AUTOMOC ON)
 
 add_executable(flow_integration_tests
     integration/flow-test.cpp
