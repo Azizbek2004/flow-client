@@ -50,11 +50,13 @@ jobs:
         cd build
         cmake --build . --config Release
 
-    # Note: The output app location depends on CMake configuration. Usually in build/client.app
-    # We will upload the entire build directory content that looks like an app.
+    - name: Create DMG
+      run: |
+        $Qt6_DIR/bin/macdeployqt build/client/AmneziaVPN.app -dmg -verbose=1
+
     - name: Upload Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: FlowClient-macOS
-        path: build/*.app
+        name: AmneziaVPN-macOS-DMG
+        path: build/client/*.dmg
         if-no-files-found: warn
