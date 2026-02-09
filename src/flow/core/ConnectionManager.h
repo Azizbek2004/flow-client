@@ -6,9 +6,9 @@
 #include <QObject>
 #include <QTimer>
 
+#include "../measurement/ISPDetector.h"
 #include "../protocols/XRayHandler.h"
 #include "BackendAPI.h"
-#include "ISPDetector.h"
 
 class ConnectionManager : public QObject
 {
