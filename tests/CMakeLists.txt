@@ -34,9 +34,9 @@ target_link_libraries(flow_integration_tests PRIVATE
 )
 
 target_include_directories(flow_integration_tests PRIVATE
-    ../../src/flow
-    ../../client
-    ../../common/logger
+    ${CMAKE_SOURCE_DIR}/src/flow
+    ${CMAKE_SOURCE_DIR}/client
+    ${CMAKE_SOURCE_DIR}/common/logger
 )
 
 # Mock definitions if needed
