@@ -1,5 +1,7 @@
 #include "BackendAPI.h"
+#include <QDateTime>
 #include <QSettings>
+#include <QUrlQuery>
 
 static BackendAPI *s_instance = nullptr;
 
@@ -118,6 +120,31 @@ void BackendAPI::fetchConfig(const QString &serverId)
         } else {
             emit configFetchFailed(reply->errorString());
         }
+        reply->deleteLater();
+    });
+}
+
+void BackendAPI::reportMetric(const QString &event, const QJsonObject &data)
+{
+    QUrl url(m_backendUrl + "/metrics");
+    QNetworkRequest request(url);
+    request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
+
+    if (!m_authToken.isEmpty()) {
+        request.setRawHeader("Authorization", ("Bearer " + m_authToken).toUtf8());
+    }
+
+    QJsonObject payload;
+    payload["event"] = event;
+    payload["data"] = data;
+    payload["timestamp"] = QDateTime::currentMSecsSinceEpoch();
+
+    QByteArray postData = QJsonDocument(payload).toJson();
+
+    QNetworkReply *reply = m_nam->post(request, postData);
+
+    connect(reply, &QNetworkReply::finished, this, [reply]() {
+        // Fire and forget - we don't block on metrics
         reply->deleteLater();
     });
 }

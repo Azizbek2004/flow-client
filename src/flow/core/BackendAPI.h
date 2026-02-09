@@ -28,6 +28,13 @@ public:
     Q_INVOKABLE void fetchServers(const QString &isp);
     Q_INVOKABLE void fetchConfig(const QString &serverId);
 
+    /**
+     * @brief Report a metric event to the backend
+     * @param event Event name (e.g., "connection_success", "connection_failure")
+     * @param data Additional event data
+     */
+    Q_INVOKABLE void reportMetric(const QString &event, const QJsonObject &data);
+
 signals:
     void backendUrlChanged();
     void authenticatedChanged();

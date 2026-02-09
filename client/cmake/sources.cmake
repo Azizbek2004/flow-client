@@ -33,6 +33,10 @@ set(HEADERS ${HEADERS}
     ${CLIENT_ROOT_DIR}/../src/flow/measurement/ISPDetector.h
     ${CLIENT_ROOT_DIR}/../src/flow/core/BackendAPI.h
     ${CLIENT_ROOT_DIR}/../src/flow/core/ConnectionManager.h
+    ${CLIENT_ROOT_DIR}/../src/flow/core/ConnectionManagerV2.h
+    ${CLIENT_ROOT_DIR}/../src/flow/core/HealthMonitor.h
+    ${CLIENT_ROOT_DIR}/../src/flow/core/ProcessMonitor.h
+    ${CLIENT_ROOT_DIR}/../src/flow/core/SystemProxy.h
     ${CLIENT_ROOT_DIR}/../src/flow/protocols/XRayHandler.h
 )
 
@@ -88,6 +92,10 @@ set(SOURCES ${SOURCES}
     ${CLIENT_ROOT_DIR}/../src/flow/core/ProtocolGuard.cpp
     ${CLIENT_ROOT_DIR}/../src/flow/core/BackendAPI.cpp
     ${CLIENT_ROOT_DIR}/../src/flow/core/ConnectionManager.cpp
+    ${CLIENT_ROOT_DIR}/../src/flow/core/ConnectionManagerV2.cpp
+    ${CLIENT_ROOT_DIR}/../src/flow/core/HealthMonitor.cpp
+    ${CLIENT_ROOT_DIR}/../src/flow/core/ProcessMonitor.cpp
+    ${CLIENT_ROOT_DIR}/../src/flow/core/SystemProxy.cpp
     ${CLIENT_ROOT_DIR}/../src/flow/measurement/ISPDetector.cpp
     ${CLIENT_ROOT_DIR}/../src/flow/protocols/XRayHandler.cpp
 )
