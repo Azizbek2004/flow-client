@@ -17,14 +17,11 @@ enable_testing()
 
 add_executable(flow_integration_tests
     integration/flow-test.cpp
-    ../../src/flow/core/BackendAPI.cpp
-    ../../src/flow/core/ProtocolGuard.cpp
-    ../../src/flow/core/ConnectionManager.cpp
-    ../../src/flow/measurement/ISPDetector.cpp
-    ../../src/flow/protocols/XRayHandler.cpp
-    ../../client/core/errorstrings.cpp
-    ../../client/core/osSignalHandler.cpp
-    ../../common/logger/logger.cpp
+    ${CMAKE_SOURCE_DIR}/src/flow/core/BackendAPI.cpp
+    ${CMAKE_SOURCE_DIR}/src/flow/core/ProtocolGuard.cpp
+    ${CMAKE_SOURCE_DIR}/src/flow/core/ConnectionManager.cpp
+    ${CMAKE_SOURCE_DIR}/src/flow/measurement/ISPDetector.cpp
+    ${CMAKE_SOURCE_DIR}/src/flow/protocols/XRayHandler.cpp
 )
 
 target_link_libraries(flow_integration_tests PRIVATE
