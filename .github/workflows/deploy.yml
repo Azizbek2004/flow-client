@@ -49,7 +49,7 @@ jobs:
     - name: 'Get version from CMakeLists.txt'
       id: get_version
       run: |
-        VERSION=$(grep 'set(AMNEZIAVPN_VERSION' CMakeLists.txt | sed -E 's/.*AMNEZIAVPN_VERSION ([0-9]+.[0-9]+.[0-9]+.[0-9]+)\)/\1/')
+        VERSION=$(grep 'set(FLOW_VERSION' CMakeLists.txt | sed -E 's/.*FLOW_VERSION ([0-9]+.[0-9]+.[0-9]+.[0-9]+)\)/\1/')
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "Version: $VERSION"
 
@@ -64,26 +64,26 @@ jobs:
         bash deploy/build_linux.sh
 
     - name: 'Pack installer'
-      run: cd deploy && tar -cf AmneziaVPN_Linux_Installer.tar AmneziaVPN_Linux_Installer.bin && zip AmneziaVPN_${VERSION}_linux_x64.tar.zip AmneziaVPN_Linux_Installer.tar
+      run: cd deploy && tar -cf Flow_Linux_Installer.tar Flow_Linux_Installer.bin && zip Flow_${VERSION}_linux_x64.tar.zip Flow_Linux_Installer.tar
 
     - name: 'Upload installer artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_${{ env.VERSION }}_linux_x64.tar.zip
-        path: deploy/AmneziaVPN_${{ env.VERSION }}_linux_x64.tar.zip
+        name: Flow_${{ env.VERSION }}_linux_x64.tar.zip
+        path: deploy/Flow_${{ env.VERSION }}_linux_x64.tar.zip
         retention-days: 7
 
     - name: 'Upload unpacked artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_Linux_unpacked
+        name: Flow_Linux_unpacked
         path: deploy/AppDir
         retention-days: 7
 
     - name: 'Upload translations artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_translations
+        name: Flow_translations
         path: client/translations
         retention-days: 7
 
@@ -115,7 +115,7 @@ jobs:
       id: get_version
       shell: bash
       run: |
-        VERSION=$(grep 'set(AMNEZIAVPN_VERSION' CMakeLists.txt | sed -E 's/.*AMNEZIAVPN_VERSION ([0-9]+.[0-9]+.[0-9]+.[0-9]+)\)/\1/')
+        VERSION=$(grep 'set(FLOW_VERSION' CMakeLists.txt | sed -E 's/.*FLOW_VERSION ([0-9]+.[0-9]+.[0-9]+.[0-9]+)\)/\1/')
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "Version: $VERSION"
 
@@ -170,26 +170,26 @@ jobs:
     - name: 'Rename Windows installer'
       shell: cmd
       run: |
-        copy AmneziaVPN_x${{ env.BUILD_ARCH }}.exe AmneziaVPN_%VERSION%_x64.exe
+        copy Flow_x${{ env.BUILD_ARCH }}.exe Flow_%VERSION%_x64.exe
 
     - name: 'Upload installer artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_${{ env.VERSION }}_x64.exe
-        path: AmneziaVPN_${{ env.VERSION }}_x64.exe
+        name: Flow_${{ env.VERSION }}_x64.exe
+        path: Flow_${{ env.VERSION }}_x64.exe
         retention-days: 7
 
     - name: 'Upload MSI installer artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_Windows_MSI_installer
-        path: AmneziaVPN_x${{ env.BUILD_ARCH }}.msi
+        name: Flow_Windows_MSI_installer
+        path: Flow_x${{ env.BUILD_ARCH }}.msi
         retention-days: 7
 
     - name: 'Upload unpacked artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_Windows_unpacked
+        name: Flow_Windows_unpacked
         path: deploy\\build_${{ env.BUILD_ARCH }}\\client\\Release
         retention-days: 7
 
@@ -361,15 +361,15 @@ jobs:
     - name: 'Upload installer artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_MacOS_old_installer
-        path: deploy/build/pkg/AmneziaVPN.pkg
+        name: Flow_MacOS_old_installer
+        path: deploy/build/pkg/Flow.pkg
         retention-days: 7
 
     - name: 'Upload unpacked artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_MacOS_old_unpacked
-        path: deploy/build/client/AmneziaVPN.app
+        name: Flow_MacOS_old_unpacked
+        path: deploy/build/client/Flow.app
         retention-days: 7
 
 # ------------------------------------------------------
@@ -431,7 +431,7 @@ jobs:
     - name: 'Get version from CMakeLists.txt'
       id: get_version
       run: |
-        VERSION=$(grep 'set(AMNEZIAVPN_VERSION' CMakeLists.txt | sed -E 's/.*AMNEZIAVPN_VERSION ([0-9]+.[0-9]+.[0-9]+.[0-9]+)\)/\1/')
+        VERSION=$(grep 'set(FLOW_VERSION' CMakeLists.txt | sed -E 's/.*FLOW_VERSION ([0-9]+.[0-9]+.[0-9]+.[0-9]+)\)/\1/')
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "Version: $VERSION"
 
@@ -446,21 +446,21 @@ jobs:
     - name: 'Pack macOS installer'
       run: |
         cd deploy/build/pkg
-        zip -r ../../AmneziaVPN_${VERSION}_macos.zip AmneziaVPN.pkg
+        zip -r ../../Flow_${VERSION}_macos.zip Flow.pkg
         cd ../../..
 
     - name: 'Upload installer artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_${{ env.VERSION }}_macos.zip
-        path: deploy/AmneziaVPN_${{ env.VERSION }}_macos.zip
+        name: Flow_${{ env.VERSION }}_macos.zip
+        path: deploy/Flow_${{ env.VERSION }}_macos.zip
         retention-days: 7
 
     - name: 'Upload unpacked artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_MacOS_unpacked
-        path: deploy/build/client/AmneziaVPN.app
+        name: Flow_MacOS_unpacked
+        path: deploy/build/client/Flow.app
         retention-days: 7
 
   Build-MacOS-NE:
@@ -530,8 +530,8 @@ jobs:
     - name: 'Upload unpacked artifact'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_MacOS_unpacked
-        path: deploy/build/client/AmneziaVPN.app
+        name: Flow_MacOS_unpacked
+        path: deploy/build/client/Flow.app
         retention-days: 7
 
 # ------------------------------------------------------
@@ -625,7 +625,7 @@ jobs:
     - name: 'Get version from CMakeLists.txt'
       id: get_version
       run: |
-        VERSION=$(grep 'set(AMNEZIAVPN_VERSION' CMakeLists.txt | sed -E 's/.*AMNEZIAVPN_VERSION ([0-9]+.[0-9]+.[0-9]+.[0-9]+)\)/\1/')
+        VERSION=$(grep 'set(FLOW_VERSION' CMakeLists.txt | sed -E 's/.*FLOW_VERSION ([0-9]+.[0-9]+.[0-9]+.[0-9]+)\)/\1/')
         echo "VERSION=$VERSION" >> $GITHUB_ENV
         echo "Version: $VERSION"
 
@@ -665,49 +665,49 @@ jobs:
     - name: 'Rename Android APKs'
       run: |
         cd deploy/build
-        mv AmneziaVPN-x86_64-release.apk AmneziaVPN_${VERSION}_android9+_x86_64.apk
-        mv AmneziaVPN-x86-release.apk AmneziaVPN_${VERSION}_android9+_x86.apk
-        mv AmneziaVPN-arm64-v8a-release.apk AmneziaVPN_${VERSION}_android9+_arm64-v8a.apk
-        mv AmneziaVPN-armeabi-v7a-release.apk AmneziaVPN_${VERSION}_android9+_armeabi-v7a.apk
+        mv Flow-x86_64-release.apk Flow_${VERSION}_android9+_x86_64.apk
+        mv Flow-x86-release.apk Flow_${VERSION}_android9+_x86.apk
+        mv Flow-arm64-v8a-release.apk Flow_${VERSION}_android9+_arm64-v8a.apk
+        mv Flow-armeabi-v7a-release.apk Flow_${VERSION}_android9+_armeabi-v7a.apk
         cd ../..
 
     - name: 'Upload x86_64 apk'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_${{ env.VERSION }}_android9+_x86_64.apk
-        path: deploy/build/AmneziaVPN_${{ env.VERSION }}_android9+_x86_64.apk
+        name: Flow_${{ env.VERSION }}_android9+_x86_64.apk
+        path: deploy/build/Flow_${{ env.VERSION }}_android9+_x86_64.apk
         compression-level: 0
         retention-days: 7
 
     - name: 'Upload x86 apk'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_${{ env.VERSION }}_android9+_x86.apk
-        path: deploy/build/AmneziaVPN_${{ env.VERSION }}_android9+_x86.apk
+        name: Flow_${{ env.VERSION }}_android9+_x86.apk
+        path: deploy/build/Flow_${{ env.VERSION }}_android9+_x86.apk
         compression-level: 0
         retention-days: 7
 
     - name: 'Upload arm64-v8a apk'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_${{ env.VERSION }}_android9+_arm64-v8a.apk
-        path: deploy/build/AmneziaVPN_${{ env.VERSION }}_android9+_arm64-v8a.apk
+        name: Flow_${{ env.VERSION }}_android9+_arm64-v8a.apk
+        path: deploy/build/Flow_${{ env.VERSION }}_android9+_arm64-v8a.apk
         compression-level: 0
         retention-days: 7
 
     - name: 'Upload armeabi-v7a apk'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN_${{ env.VERSION }}_android9+_armeabi-v7a.apk
-        path: deploy/build/AmneziaVPN_${{ env.VERSION }}_android9+_armeabi-v7a.apk
+        name: Flow_${{ env.VERSION }}_android9+_armeabi-v7a.apk
+        path: deploy/build/Flow_${{ env.VERSION }}_android9+_armeabi-v7a.apk
         compression-level: 0
         retention-days: 7
 
     - name: 'Upload aab'
       uses: actions/upload-artifact@v4
       with:
-        name: AmneziaVPN-android
-        path: deploy/build/AmneziaVPN-release.aab
+        name: Flow-android
+        path: deploy/build/Flow-release.aab
         compression-level: 0
         retention-days: 7
 
