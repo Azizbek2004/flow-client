@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.25.0 FATAL_ERROR)
 
 set(PROJECT Flow)
-set(FLOW_VERSION 4.8.12.9)
+set(FLOW_VERSION 4.6.0.4)
 
 project(${PROJECT} VERSION ${FLOW_VERSION}
         DESCRIPTION "Flow"
