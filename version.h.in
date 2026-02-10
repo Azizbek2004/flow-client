@@ -2,15 +2,15 @@
 #define VERSION_H
 
 #ifndef APP_VERSION
-#define APP_VERSION "@CMAKE_PROJECT_VERSION@"
+    #define APP_VERSION "@CMAKE_PROJECT_VERSION@"
 #endif
 
 #ifndef APP_MAJOR_VERSION
-#define APP_MAJOR_VERSION "@APP_MAJOR_VERSION@"
+    #define APP_MAJOR_VERSION "@APP_MAJOR_VERSION@"
 #endif
 
-#define APPLICATION_NAME    "AmneziaVPN"
-#define SERVICE_NAME        "AmneziaVPN-service"
-#define ORGANIZATION_NAME   "AmneziaVPN.ORG"
+#define APPLICATION_NAME  "Flow"
+#define SERVICE_NAME      "Flow-service"
+#define ORGANIZATION_NAME "Flow"
 
-#endif  // VERSION_H
+#endif // VERSION_H
