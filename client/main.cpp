@@ -22,7 +22,7 @@ bool isAnotherInstanceRunning()
     QLocalSocket socket;
     socket.connectToServer("FlowInstance");
     if (socket.waitForConnected(500)) {
-        qWarning() << "AmneziaVPN is already running";
+        qWarning() << "Flow is already running";
         return true;
     }
     return false;

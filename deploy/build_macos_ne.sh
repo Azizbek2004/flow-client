@@ -20,9 +20,9 @@ BUILD_DIR=$DEPLOY_DIR/build-macos
 echo "Project dir: ${PROJECT_DIR}" 
 echo "Build dir: ${BUILD_DIR}"
 
-APP_NAME=AmneziaVPN
+APP_NAME=Flow
 APP_FILENAME=$APP_NAME.app
-APP_DOMAIN=org.amneziavpn.package
+APP_DOMAIN=org.flow.client
 PLIST_NAME=$APP_NAME.plist
 
 OUT_APP_DIR=$BUILD_DIR/client
@@ -48,7 +48,7 @@ shasum -a 256 $SIGNING_CERT_P12
 KEYCHAIN_PASS=$MAC_SIGNING_CERT_PASSWORD
 
 # Keychain setup
-KEYCHAIN=amnezia.build.macos.keychain
+KEYCHAIN=flow.build.macos.keychain
 TEMP_PASS=tmp_pass
 KEYCHAIN_FILE=$HOME/Library/Keychains/$KEYCHAIN-db
 
@@ -110,9 +110,9 @@ echo "xcode build"
 xcodebuild \
 "OTHER_CODE_SIGN_FLAGS=--keychain '$KEYCHAIN_FILE'" \
 -configuration Release \
--scheme AmneziaVPN \
+-scheme Flow \
 -destination "platform=macOS" \
--project $PROJECT_DIR/build-macos/AmneziaVPN.xcodeproj
+-project $PROJECT_DIR/build-macos/Flow.xcodeproj
 
 
 # Restore keychain to default

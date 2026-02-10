@@ -91,14 +91,17 @@ void Logger::deInit()
 bool Logger::setServiceLogsEnabled(bool enabled)
 {
 #ifdef AMNEZIA_DESKTOP
-    return IpcClient::withInterface([enabled](QSharedPointer<IpcInterfaceReplica> iface) {
-        iface->setLogsEnabled(enabled);
-        qDebug() << "Logger::setServiceLogsEnabled(): Logs transitioned to be " << (enabled ? "enabled" : "disabled");
-        return true;
-    },[](){
-        qWarning() << "Logger::setServiceLogsEnabled(): Service is not running";
-        return false;
-    });
+    return IpcClient::withInterface(
+            [enabled](QSharedPointer<IpcInterfaceReplica> iface) {
+                iface->setLogsEnabled(enabled);
+                qDebug() << "Logger::setServiceLogsEnabled(): Logs transitioned to be "
+                         << (enabled ? "enabled" : "disabled");
+                return true;
+            },
+            []() {
+                qWarning() << "Logger::setServiceLogsEnabled(): Service is not running";
+                return false;
+            });
 #endif
 
     return true;
@@ -201,12 +204,12 @@ void Logger::clearLogs(bool isServiceLogger)
 void Logger::clearServiceLogs()
 {
 #ifdef AMNEZIA_DESKTOP
-    IpcClient::withInterface([](QSharedPointer<IpcInterfaceReplica> iface) {
-        iface->clearLogs();
-        qDebug() << "Logger::clearServiceLogs(): Logs cleared";
-    }, []() {
-        qWarning() << "Logger::clearServiceLogs(): Service is not running";
-    });
+    IpcClient::withInterface(
+            [](QSharedPointer<IpcInterfaceReplica> iface) {
+                iface->clearLogs();
+                qDebug() << "Logger::clearServiceLogs(): Logs cleared";
+            },
+            []() { qWarning() << "Logger::clearServiceLogs(): Service is not running"; });
 #endif
 }
 
@@ -235,7 +238,7 @@ Logger::LogStreamer::~LogStreamer()
     case LogLevel::Error: logLevelString = "[ERROR]"; break;
     }
 
-    const QString message = QString("%1 %2 Amnezia %3 : %4")
+    const QString message = QString("%1 %2 Flow %3 : %4")
                                     .arg(QDateTime::currentDateTimeUtc().toString("[yyyy-MM-dd hh:mm:ss.zzzZ]"),
                                          logLevelString, m_logger->className(), m_data->m_buffer.trimmed());
 

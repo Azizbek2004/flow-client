@@ -15,10 +15,11 @@
 
 using namespace QKeychain;
 
-namespace {
+namespace
+{
     constexpr const char *settingsKeyTag = "settingsKeyTag";
     constexpr const char *settingsIvTag = "settingsIvTag";
-    constexpr const char *keyChainName = "AmneziaVPN-Keychain";
+    constexpr const char *keyChainName = "Flow-Keychain";
 }
 
 SecureQSettings::SecureQSettings(const QString &organization, const QString &application, QObject *parent)
@@ -130,26 +131,22 @@ QByteArray SecureQSettings::backupAppConfig() const
     QJsonObject cfg;
 
     const auto needToBackup = [this](const auto &key) {
-      for (const auto &item : m_fieldsToBackup)
-      {
-        if (key == "Conf/installationUuid")
-        {
-          return false;
+        for (const auto &item : m_fieldsToBackup) {
+            if (key == "Conf/installationUuid") {
+                return false;
+            }
+
+            if (key.startsWith(item)) {
+                return true;
+            }
         }
 
-        if (key.startsWith(item))
-        {
-            return true;
-        }
-      }
-
-      return false;
+        return false;
     };
 
     for (const QString &key : m_settings.allKeys()) {
 
-        if (!needToBackup(key))
-        {
+        if (!needToBackup(key)) {
             continue;
         }
 

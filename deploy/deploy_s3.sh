@@ -13,8 +13,8 @@ mkdir -p dist
 cd dist
 
 echo $VERSION >> VERSION
-curl -s https://api.github.com/repos/amnezia-vpn/amnezia-client/releases/tags/$VERSION | jq -r .body | tr -d '\r' > CHANGELOG
-curl -s https://api.github.com/repos/amnezia-vpn/amnezia-client/releases/tags/$VERSION | jq -r .published_at > RELEASE_DATE
+curl -s https://api.github.com/repos/Azizbek2004/flow-client/releases/tags/$VERSION | jq -r .body | tr -d '\r' > CHANGELOG
+curl -s https://api.github.com/repos/Azizbek2004/flow-client/releases/tags/$VERSION | jq -r .published_at > RELEASE_DATE
 
 if [[ $(cat CHANGELOG) = null ]]; then
 	echo '::error::Release does not exists. Exiting with error...'
@@ -33,13 +33,13 @@ download_file() {
     echo "Successfully downloaded $filename"
 }
 
-download_file https://github.com/amnezia-vpn/amnezia-client/releases/download/${VERSION}/AmneziaVPN_${VERSION}_android9+_arm64-v8a.apk
-download_file https://github.com/amnezia-vpn/amnezia-client/releases/download/${VERSION}/AmneziaVPN_${VERSION}_android9+_armeabi-v7a.apk
-download_file https://github.com/amnezia-vpn/amnezia-client/releases/download/${VERSION}/AmneziaVPN_${VERSION}_android9+_x86.apk
-download_file https://github.com/amnezia-vpn/amnezia-client/releases/download/${VERSION}/AmneziaVPN_${VERSION}_android9+_x86_64.apk
-download_file https://github.com/amnezia-vpn/amnezia-client/releases/download/${VERSION}/AmneziaVPN_${VERSION}_linux_x64.tar
-download_file https://github.com/amnezia-vpn/amnezia-client/releases/download/${VERSION}/AmneziaVPN_${VERSION}_macos.pkg
-download_file https://github.com/amnezia-vpn/amnezia-client/releases/download/${VERSION}/AmneziaVPN_${VERSION}_x64.exe 
+download_file https://github.com/Azizbek2004/flow-client/releases/download/${VERSION}/Flow_${VERSION}_android9+_arm64-v8a.apk
+download_file https://github.com/Azizbek2004/flow-client/releases/download/${VERSION}/Flow_${VERSION}_android9+_armeabi-v7a.apk
+download_file https://github.com/Azizbek2004/flow-client/releases/download/${VERSION}/Flow_${VERSION}_android9+_x86.apk
+download_file https://github.com/Azizbek2004/flow-client/releases/download/${VERSION}/Flow_${VERSION}_android9+_x86_64.apk
+download_file https://github.com/Azizbek2004/flow-client/releases/download/${VERSION}/Flow_${VERSION}_linux_x64.tar
+download_file https://github.com/Azizbek2004/flow-client/releases/download/${VERSION}/Flow_${VERSION}_macos.pkg
+download_file https://github.com/Azizbek2004/flow-client/releases/download/${VERSION}/Flow_${VERSION}_x64.exe 
 
 cd ../
 
