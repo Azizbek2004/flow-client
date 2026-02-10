@@ -1,0 +1,80 @@
+name: Build Windows Client
+
+on:
+  push:
+    branches: [ "main", "master", "dev" ]
+  pull_request:
+    branches: [ "main", "master", "dev" ]
+  workflow_dispatch:
+
+env:
+  QT_VERSION: 6.8.0
+  QIF_VERSION: 4.8
+  BUILD_ARCH: 64
+
+jobs:
+  build:
+    name: Build Windows App
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ env.QT_VERSION }}
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2022_64'
+        modules: 'qtremoteobjects qt5compat qtshadertools'
+        dir: ${{ runner.temp }}
+        setup-python: 'true'
+        tools: 'tools_ifw'
+        set-env: 'true'
+
+    - name: Setup MSVC
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: 'x64'
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Install WiX Toolset
+      shell: powershell
+      run: |
+        dotnet tool install --global wix --version 4.0.6
+        wix extension add -g WixToolset.UI.wixext/4.0.6
+        wix extension add -g WixToolset.Util.wixext/4.0.6
+        $wixBinDir = Join-Path $env:USERPROFILE ".dotnet\tools"
+        echo "WIX_BIN_DIR=$wixBinDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    - name: Build and Package
+      shell: cmd
+      run: |
+        set BUILD_ARCH=${{ env.BUILD_ARCH }}
+        set QT_BIN_DIR=${{ runner.temp }}\Qt\${{ env.QT_VERSION }}\msvc2022_64\bin
+        set QIF_BIN_DIR=${{ runner.temp }}\Qt\Tools\QtInstallerFramework\${{ env.QIF_VERSION }}\bin
+        set WIX_BIN_DIR=%USERPROFILE%\.dotnet\tools
+        
+        call deploy\build_windows.bat
+
+    - name: Upload Installer
+      uses: actions/upload-artifact@v4
+      with:
+        name: Flow-Client-Windows-Installer
+        path: Flow_x64.exe
+        if-no-files-found: warn
+
+    - name: Upload MSI
+      uses: actions/upload-artifact@v4
+      with:
+        name: Flow-Client-Windows-MSI
+        path: Flow_x64.msi
+        if-no-files-found: warn
