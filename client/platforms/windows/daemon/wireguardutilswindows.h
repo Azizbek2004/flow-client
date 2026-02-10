@@ -18,45 +18,52 @@
 class WindowsFirewall;
 class WindowsRouteMonitor;
 
-class WireguardUtilsWindows final : public WireguardUtils {
-  Q_OBJECT
+class WireguardUtilsWindows final : public WireguardUtils
+{
+    Q_OBJECT
 
- public:
-  static std::unique_ptr<WireguardUtilsWindows> create(WindowsFirewall* fw,
-                                                       QObject* parent);
-  ~WireguardUtilsWindows();
+public:
+    static std::unique_ptr<WireguardUtilsWindows> create(WindowsFirewall *fw, QObject *parent);
+    ~WireguardUtilsWindows();
 
-  bool interfaceExists() override { return m_tunnel.isRunning(); }
-  QString interfaceName() override {
-    return WireguardUtilsWindows::s_interfaceName();
-  }
-  static const QString s_interfaceName() { return "AmneziaVPN"; }
-  bool addInterface(const InterfaceConfig& config) override;
-  bool deleteInterface() override;
+    bool interfaceExists() override
+    {
+        return m_tunnel.isRunning();
+    }
+    QString interfaceName() override
+    {
+        return WireguardUtilsWindows::s_interfaceName();
+    }
+    static const QString s_interfaceName()
+    {
+        return "Flow";
+    }
+    bool addInterface(const InterfaceConfig &config) override;
+    bool deleteInterface() override;
 
-  bool updatePeer(const InterfaceConfig& config) override;
-  bool deletePeer(const InterfaceConfig& config) override;
-  QList<PeerStatus> getPeerStatus() override;
+    bool updatePeer(const InterfaceConfig &config) override;
+    bool deletePeer(const InterfaceConfig &config) override;
+    QList<PeerStatus> getPeerStatus() override;
 
-  bool updateRoutePrefix(const IPAddress& prefix) override;
-  bool deleteRoutePrefix(const IPAddress& prefix) override;
+    bool updateRoutePrefix(const IPAddress &prefix) override;
+    bool deleteRoutePrefix(const IPAddress &prefix) override;
 
-  bool addExclusionRoute(const IPAddress& prefix) override;
-  bool deleteExclusionRoute(const IPAddress& prefix) override;
+    bool addExclusionRoute(const IPAddress &prefix) override;
+    bool deleteExclusionRoute(const IPAddress &prefix) override;
 
-  bool WireguardUtilsWindows::excludeLocalNetworks(const QList<IPAddress>& addresses) override;
+    bool WireguardUtilsWindows::excludeLocalNetworks(const QList<IPAddress> &addresses) override;
 
- signals:
-  void backendFailure();
+signals:
+    void backendFailure();
 
- private:
-  WireguardUtilsWindows(QObject* parent, WindowsFirewall* fw);
-  void buildMibForwardRow(const IPAddress& prefix, void* row);
+private:
+    WireguardUtilsWindows(QObject *parent, WindowsFirewall *fw);
+    void buildMibForwardRow(const IPAddress &prefix, void *row);
 
-  quint64 m_luid = 0;
-  WindowsTunnelService m_tunnel;
-  QPointer<WindowsRouteMonitor> m_routeMonitor;
-  QPointer<WindowsFirewall> m_firewall;
+    quint64 m_luid = 0;
+    WindowsTunnelService m_tunnel;
+    QPointer<WindowsRouteMonitor> m_routeMonitor;
+    QPointer<WindowsFirewall> m_firewall;
 };
 
-#endif  // WIREGUARDUTILSWINDOWS_H
+#endif // WIREGUARDUTILSWINDOWS_H
